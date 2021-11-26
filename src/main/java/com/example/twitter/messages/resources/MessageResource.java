@@ -85,8 +85,16 @@ public class MessageResource {
 			@RequestHeader(name = "password") String password, Message message) {
 
 		authenticate(username, password);
-
-		messageRepository.save(message);
+		
+		Optional<Message> msg = messageRepository.findById(message.getMessageId());
+		
+		if(msg.isPresent()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+		
+		msg.get().setBody(message.getBody());
+		msg.get().setDate(message.getDate());
+		messageRepository.save(msg.get());
 	}
 
 }
