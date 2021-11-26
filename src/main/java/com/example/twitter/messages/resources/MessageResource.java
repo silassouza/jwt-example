@@ -80,21 +80,4 @@ public class MessageResource {
 		messageRepository.deleteById(messageId);
 	}
 
-	@PutMapping
-	public void update(@RequestHeader(name = "username") String username,
-			@RequestHeader(name = "password") String password, Message message) {
-
-		authenticate(username, password);
-		
-		Optional<Message> msg = messageRepository.findById(message.getMessageId());
-		
-		if(msg.isPresent()) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-		}
-		
-		msg.get().setBody(message.getBody());
-		msg.get().setDate(message.getDate());
-		messageRepository.save(msg.get());
-	}
-
 }
