@@ -4,67 +4,52 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.twitter.auth.JwtUtil;
 import com.example.twitter.messages.entities.Message;
 import com.example.twitter.messages.repositories.MessageRepository;
-import com.example.twitter.users.entities.User;
-import com.example.twitter.users.repositories.UserRepository;
 
 @RestController
 @RequestMapping("messages")
 public class MessageResource {
 
-	private User loggedUser;
-
-	private UserRepository userRepository;
+	@Value("${jwt.secret}")
+	private String secret;
 
 	private MessageRepository messageRepository;
 
-	public MessageResource(UserRepository userRepository, MessageRepository messageRepository) {
-		this.userRepository = userRepository;
+	public MessageResource(MessageRepository messageRepository) {
 		this.messageRepository = messageRepository;
 	}
 
-	private void authenticate(String username, String password) {
-
-		Optional<User> opUser = userRepository.findOne(Example.of(new User(username, password)));
-
-		if (!opUser.isPresent()) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-		}
-
-		this.loggedUser = opUser.get();
-	}
-
 	@GetMapping
-	public Collection<Message> messages(@RequestHeader(name = "username") String username,
-			@RequestHeader(name = "password") String password) {
+	public Collection<Message> messages(@RequestHeader(name = "token") String token) {
 
-		authenticate(username, password);
+		Long userId = JwtUtil.validate(secret, token);
 
-		return messageRepository.findAll();
+		return messageRepository.findAll(Example.of(new Message(userId)));
 	}
 
 	@PostMapping
-	public void insert(@RequestHeader(name = "username") String username,
-			@RequestHeader(name = "password") String password, 
-			@RequestParam(name = "message") String message) {
+	public void insert(@RequestHeader(name = "token") String token, @RequestParam(name = "message") String message) {
 
-		authenticate(username, password);
-		
+		Long userId = JwtUtil.validate(secret, token);
+
 		Message msg = new Message();
-		msg.setUserId(loggedUser.getUserId());
+		msg.setUserId(userId);
 		msg.setBody(message);
 		msg.setDate(LocalDate.now());
 
@@ -72,12 +57,41 @@ public class MessageResource {
 	}
 
 	@DeleteMapping
-	public void delete(@RequestHeader(name = "username") String username,
-			@RequestHeader(name = "password") String password, @RequestParam(name = "messageId") Long messageId) {
+	public void delete(@RequestHeader(name = "token") String token, @RequestParam(name = "messageId") Long messageId) {
 
-		authenticate(username, password);
+		Long userId = JwtUtil.validate(secret, token);
 
-		messageRepository.deleteById(messageId);
+		Optional<Message> message = messageRepository.findById(messageId);
+
+		if (!message.isPresent()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+
+		if (message.get().getUserId() != userId) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+		}
+
+		messageRepository.delete(message.get());
+	}
+
+	@PutMapping
+	public void update(@RequestHeader(name = "token") String token, @RequestBody Message message) {
+
+		Long userId = JwtUtil.validate(secret, token);
+
+		if (message == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+		}
+
+		if (message.getUserId() != userId) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+		}
+		
+		if (!messageRepository.existsById(message.getMessageId())) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+
+		messageRepository.save(message);
 	}
 
 }

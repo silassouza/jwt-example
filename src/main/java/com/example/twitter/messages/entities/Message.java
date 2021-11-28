@@ -16,6 +16,12 @@ import com.sun.istack.NotNull;
 @Table(name = "message")
 public class Message {
 	
+	public Message() { }
+	
+	public Message(Long userId) { 
+		this.userId = userId;
+	}
+	
 	@Id
 	@SequenceGenerator(name = "message_seq", allocationSize = 1)
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_seq")
