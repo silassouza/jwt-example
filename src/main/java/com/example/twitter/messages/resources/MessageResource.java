@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.twitter.auth.JwtUtil;
 import com.example.twitter.messages.entities.Message;
 import com.example.twitter.messages.repositories.MessageRepository;
+import com.example.twitter.users.entities.User;
 
 @RestController
 @RequestMapping("messages")
@@ -36,20 +38,20 @@ public class MessageResource {
 	}
 
 	@GetMapping
-	public Collection<Message> messages(@RequestHeader(name = "token") String token) {
+	public Collection<Message> messages(Authentication authentication) {
+		
+		User user = (User) authentication.getPrincipal();
 
-		Long userId = JwtUtil.validate(secret, token);
-
-		return messageRepository.findAll(Example.of(new Message(userId)));
+		return messageRepository.findAll(Example.of(new Message(user.getUserId())));
 	}
 
 	@PostMapping
-	public void insert(@RequestHeader(name = "token") String token, @RequestParam(name = "message") String message) {
+	public void insert(Authentication authentication, @RequestParam(name = "message") String message) {
 
-		Long userId = JwtUtil.validate(secret, token);
+		User user = (User) authentication.getPrincipal();
 
 		Message msg = new Message();
-		msg.setUserId(userId);
+		msg.setUserId(user.getUserId());
 		msg.setBody(message);
 		msg.setDate(LocalDate.now());
 
@@ -57,9 +59,9 @@ public class MessageResource {
 	}
 
 	@DeleteMapping
-	public void delete(@RequestHeader(name = "token") String token, @RequestParam(name = "messageId") Long messageId) {
+	public void delete(Authentication authentication, @RequestParam(name = "messageId") Long messageId) {
 
-		Long userId = JwtUtil.validate(secret, token);
+		User user = (User) authentication.getPrincipal();
 
 		Optional<Message> message = messageRepository.findById(messageId);
 
@@ -67,7 +69,7 @@ public class MessageResource {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		}
 
-		if (message.get().getUserId() != userId) {
+		if (message.get().getUserId() != user.getUserId()) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 		}
 
@@ -75,15 +77,15 @@ public class MessageResource {
 	}
 
 	@PutMapping
-	public void update(@RequestHeader(name = "token") String token, @RequestBody Message message) {
+	public void update(Authentication authentication, @RequestBody Message message) {
 
-		Long userId = JwtUtil.validate(secret, token);
+		User user = (User) authentication.getPrincipal();
 
 		if (message == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		}
 
-		if (message.getUserId() != userId) {
+		if (message.getUserId() != user.getUserId()) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 		}
 		
