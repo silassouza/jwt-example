@@ -10,10 +10,10 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>twitter</artifactId>
+	<artifactId>jwt-example</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>twitter</name>
-	<description>Demo project for Liferay twitter exam</description>
+	<name>jwt-example</name>
+	<description>Spring boot security with jwt integration for learning purposes</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>

@@ -1,4 +1,4 @@
-package com.example.twitter.auth;
+package com.example.jwt.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -7,8 +7,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.example.twitter.users.entities.User;
-import com.example.twitter.users.repositories.UserRepository;
+import com.example.jwt.users.entities.User;
+import com.example.jwt.users.repositories.UserRepository;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService {

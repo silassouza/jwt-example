@@ -1,4 +1,4 @@
-package com.example.twitter.users.entities;
+package com.example.jwt.users.entities;
 
 import java.util.Collection;
 
@@ -28,6 +28,11 @@ public class User implements UserDetails {
 	public User(String username, String password) {
 		this.username = username;
 		this.password = password;
+	}
+	
+	public User(Long userId, String username) {
+		this.userId = userId;
+		this.username = username;
 	}
 
 	@Id

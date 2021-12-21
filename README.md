@@ -1,9 +1,4 @@
-# liferay-twitter
-
-Run:
-```
-./mvnw liferay-twitter:run
-```
+# Spring Boot Security Example
 
 Access:
 http://localhost:8080/h2-console/

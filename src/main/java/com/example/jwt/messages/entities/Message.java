@@ -1,4 +1,4 @@
-package com.example.twitter.messages.entities;
+package com.example.jwt.messages.entities;
 
 import java.time.LocalDate;
 
