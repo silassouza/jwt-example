@@ -4,21 +4,22 @@ import java.util.IllegalFormatWidthException;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.example.jwt.users.entities.User;
 
 public class JwtUtil {
-	
+
 	private Algorithm algorithm;
-	
+
 	private JWTVerifier verifier;
-	
+
 	public JwtUtil(Algorithm algorithm) {
 		this.algorithm = algorithm;
-		this.verifier = JWT.require(algorithm).build();	
+		this.verifier = JWT.require(algorithm).build();
 	}
-	
+
 	public String generate(User user) {
 		String token = JWT.create()
 				.withClaim("userId", user.getUserId())
@@ -30,7 +31,7 @@ public class JwtUtil {
 	public boolean isValid(String token) {
 		try {
 			verifier.verify(token);
-		} catch (Exception e) {
+		} catch (JWTVerificationException e) {
 			return false;
 		}
 		return true;
