@@ -1,14 +1,13 @@
 # Spring Boot Security Example
 
-Access:
+Access H2 Console:
+```
 http://localhost:8080/h2-console/
+```
 
-Creadentials at:
+Credentials at:
+```
 applicatin.propertires
-
-Run:
-```SQL:
-INSERT INTO user VALUES(1, 'admin', 'admin');
 ```
 
 Postman collection
